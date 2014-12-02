@@ -48,7 +48,8 @@ public class Main extends javax.swing.JFrame {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jPanel_DirectControlTab = new javax.swing.JPanel();
+        jScrollPane_Main = new javax.swing.JScrollPane();
+        jPanel_Main = new javax.swing.JPanel();
         jPanel_EnabledPanel = new javax.swing.JPanel();
         jScrollPane_GameDataTree = new javax.swing.JScrollPane();
         jTree_GameDataTree = new javax.swing.JTree();
@@ -81,10 +82,22 @@ public class Main extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("KSP AutoPruner");
+        setMinimumSize(new java.awt.Dimension(550, 350));
+        setPreferredSize(new java.awt.Dimension(600, 600));
         getContentPane().setLayout(new java.awt.CardLayout());
+
+        jScrollPane_Main.setMinimumSize(new java.awt.Dimension(200, 150));
+        jScrollPane_Main.setPreferredSize(new java.awt.Dimension(400, 300));
+
+        jPanel_Main.setMinimumSize(new java.awt.Dimension(400, 300));
+        jPanel_Main.setPreferredSize(new java.awt.Dimension(400, 300));
+        jPanel_Main.setLayout(new java.awt.GridBagLayout());
 
         jPanel_EnabledPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED), javax.swing.BorderFactory.createTitledBorder("GameData files:")));
         jPanel_EnabledPanel.setPreferredSize(new java.awt.Dimension(200, 371));
+        jPanel_EnabledPanel.setLayout(new java.awt.GridBagLayout());
+
+        jScrollPane_GameDataTree.setMinimumSize(new java.awt.Dimension(0, 0));
 
         javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("root");
         jTree_GameDataTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
@@ -93,19 +106,27 @@ public class Main extends javax.swing.JFrame {
         jTree_GameDataTree.setModel(new TreeModel_FullPathExchange(getNodeFromFile(GAMEDATA_DIR)));
         jScrollPane_GameDataTree.setViewportView(jTree_GameDataTree);
 
-        javax.swing.GroupLayout jPanel_EnabledPanelLayout = new javax.swing.GroupLayout(jPanel_EnabledPanel);
-        jPanel_EnabledPanel.setLayout(jPanel_EnabledPanelLayout);
-        jPanel_EnabledPanelLayout.setHorizontalGroup(
-            jPanel_EnabledPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane_GameDataTree, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
-        );
-        jPanel_EnabledPanelLayout.setVerticalGroup(
-            jPanel_EnabledPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane_GameDataTree)
-        );
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel_EnabledPanel.add(jScrollPane_GameDataTree, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.weighty = 0.1;
+        jPanel_Main.add(jPanel_EnabledPanel, gridBagConstraints);
 
         jPanel_DisabledPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED), javax.swing.BorderFactory.createTitledBorder("Disabled files:")));
         jPanel_DisabledPanel.setPreferredSize(new java.awt.Dimension(200, 371));
+        jPanel_DisabledPanel.setLayout(new java.awt.GridBagLayout());
 
         treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("root");
         jTree_DisabledFilesTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
@@ -114,16 +135,23 @@ public class Main extends javax.swing.JFrame {
         jTree_DisabledFilesTree.setModel(new TreeModel_FullPathExchange(getNodeFromFile(DISABLED_FILES_DIR)));
         jScrollPane_DisabledFilesTree.setViewportView(jTree_DisabledFilesTree);
 
-        javax.swing.GroupLayout jPanel_DisabledPanelLayout = new javax.swing.GroupLayout(jPanel_DisabledPanel);
-        jPanel_DisabledPanel.setLayout(jPanel_DisabledPanelLayout);
-        jPanel_DisabledPanelLayout.setHorizontalGroup(
-            jPanel_DisabledPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane_DisabledFilesTree, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
-        );
-        jPanel_DisabledPanelLayout.setVerticalGroup(
-            jPanel_DisabledPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane_DisabledFilesTree)
-        );
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel_DisabledPanel.add(jScrollPane_DisabledFilesTree, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.weighty = 0.1;
+        jPanel_Main.add(jPanel_DisabledPanel, gridBagConstraints);
 
         jPanel_CenterAreaPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -331,31 +359,18 @@ public class Main extends javax.swing.JFrame {
         gridBagConstraints.weighty = 1.0;
         jPanel_CenterAreaPanel.add(jPanel_ListControl, gridBagConstraints);
 
-        javax.swing.GroupLayout jPanel_DirectControlTabLayout = new javax.swing.GroupLayout(jPanel_DirectControlTab);
-        jPanel_DirectControlTab.setLayout(jPanel_DirectControlTabLayout);
-        jPanel_DirectControlTabLayout.setHorizontalGroup(
-            jPanel_DirectControlTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel_DirectControlTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel_EnabledPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel_CenterAreaPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel_DisabledPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(15, 15, 15))
-        );
-        jPanel_DirectControlTabLayout.setVerticalGroup(
-            jPanel_DirectControlTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel_DirectControlTabLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel_DirectControlTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel_EnabledPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 492, Short.MAX_VALUE)
-                    .addComponent(jPanel_DisabledPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 492, Short.MAX_VALUE)
-                    .addComponent(jPanel_CenterAreaPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 492, Short.MAX_VALUE))
-                .addContainerGap())
-        );
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.weighty = 0.1;
+        jPanel_Main.add(jPanel_CenterAreaPanel, gridBagConstraints);
 
-        getContentPane().add(jPanel_DirectControlTab, "card3");
+        jScrollPane_Main.setViewportView(jPanel_Main);
+
+        getContentPane().add(jScrollPane_Main, "card3");
 
         jMenu1.setText("File");
 
@@ -459,13 +474,14 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPanel jPanel_CenterAreaPanel;
     private javax.swing.JPanel jPanel_DirectControl;
-    private javax.swing.JPanel jPanel_DirectControlTab;
     private javax.swing.JPanel jPanel_DisabledPanel;
     private javax.swing.JPanel jPanel_EnabledPanel;
     private javax.swing.JPanel jPanel_ListControl;
+    private javax.swing.JPanel jPanel_Main;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane_DisabledFilesTree;
     private javax.swing.JScrollPane jScrollPane_GameDataTree;
+    private javax.swing.JScrollPane jScrollPane_Main;
     private javax.swing.JTree jTree_DisabledFilesTree;
     private javax.swing.JTree jTree_GameDataTree;
     private javax.swing.JTree jTree_ListTree;
