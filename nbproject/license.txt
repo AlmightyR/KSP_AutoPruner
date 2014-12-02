@@ -1,0 +1,7 @@
+<#if licenseFirst??>
+${licenseFirst}
+</#if>
+${licensePrefix}By ${project.organization!user}
+<#if licenseLast??>
+${licenseLast}
+</#if>
