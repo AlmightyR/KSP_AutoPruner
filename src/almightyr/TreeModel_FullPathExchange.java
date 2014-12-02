@@ -11,6 +11,7 @@ import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import static almightyr.Util.getLeafNodesList;
+import javax.swing.tree.TreePath;
 
 /**
  *
@@ -33,6 +34,10 @@ public class TreeModel_FullPathExchange extends DefaultTreeModel {
     public void insertNodeInto(MutableTreeNode newChild, MutableTreeNode parent, int index) {
         super.insertNodeInto(newChild, parent, index);
         lastAddedChild = (DefaultMutableTreeNode) newChild;
+    }
+
+    public DefaultMutableTreeNode getNodeFromPath(TreePath path) {
+        return null;
     }
 
     //<editor-fold defaultstate="collapsed" desc="Constructors">

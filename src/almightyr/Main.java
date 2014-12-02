@@ -4,10 +4,14 @@ import java.io.File;
 import java.util.List;
 import javax.swing.tree.DefaultMutableTreeNode;
 import static almightyr.Util.*;
+import java.util.Arrays;
+import javax.swing.event.TreeModelEvent;
+import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreePath;
 
 /**
- *
+ * @LOW_PRIORITY @TODO: Alternative version of this GUI with the 'Apply' and
+ * 'Cancel' buttons below the 'Disabled' tree.
  * @author Rodrigo Legendre Lima Rodrigues
  */
 public class Main extends javax.swing.JFrame {
@@ -94,7 +98,8 @@ public class Main extends javax.swing.JFrame {
         jPanel_Main.setLayout(new java.awt.GridBagLayout());
 
         jPanel_EnabledPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED), javax.swing.BorderFactory.createTitledBorder("GameData files:")));
-        jPanel_EnabledPanel.setPreferredSize(new java.awt.Dimension(200, 371));
+        jPanel_EnabledPanel.setMinimumSize(new java.awt.Dimension(100, 50));
+        jPanel_EnabledPanel.setPreferredSize(new java.awt.Dimension(200, 200));
         jPanel_EnabledPanel.setLayout(new java.awt.GridBagLayout());
 
         jScrollPane_GameDataTree.setMinimumSize(new java.awt.Dimension(0, 0));
@@ -102,8 +107,40 @@ public class Main extends javax.swing.JFrame {
         javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("root");
         jTree_GameDataTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
         jTree_GameDataTree.setToolTipText("This file-tree shows the files that are currently enabled.");
+        jTree_GameDataTree.setMaximumSize(new java.awt.Dimension(0, 0));
+        jTree_GameDataTree.setMinimumSize(new java.awt.Dimension(50, 50));
+        jTree_GameDataTree.setPreferredSize(new java.awt.Dimension(75, 75));
         jTree_GameDataTree.setRootVisible(false);
         jTree_GameDataTree.setModel(new TreeModel_FullPathExchange(getNodeFromFile(GAMEDATA_DIR)));
+        jTree_GameDataTree.getModel().addTreeModelListener(new TreeModelListener() {
+
+            @Override
+            public void treeNodesChanged(TreeModelEvent e) {
+                System.out.println("Tree node changed! --- Path: " + Arrays.toString(e.getPath()));
+            }
+
+            @Override
+            public void treeNodesInserted(TreeModelEvent e) {
+                TreePath treePath = e.getTreePath();
+
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode) treePath.getLastPathComponent();
+                DefaultMutableTreeNode parent = (DefaultMutableTreeNode) node.getParent();
+                if (parent != null && parent.isRoot()) {
+                    TreePath parentPath = new TreePath(parent);
+                    jTree_GameDataTree.expandPath(parentPath);
+                }
+            }
+
+            @Override
+            public void treeNodesRemoved(TreeModelEvent e) {
+                System.out.println("Tree nodes removed! --- Path: " + Arrays.toString(e.getPath()));
+            }
+
+            @Override
+            public void treeStructureChanged(TreeModelEvent e) {
+                System.out.println("Tree structure changed! --- Path: " + Arrays.toString(e.getPath()));
+            }
+        });
         jScrollPane_GameDataTree.setViewportView(jTree_GameDataTree);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -119,20 +156,51 @@ public class Main extends javax.swing.JFrame {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 0.1;
         gridBagConstraints.weighty = 0.1;
         jPanel_Main.add(jPanel_EnabledPanel, gridBagConstraints);
 
         jPanel_DisabledPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED), javax.swing.BorderFactory.createTitledBorder("Disabled files:")));
-        jPanel_DisabledPanel.setPreferredSize(new java.awt.Dimension(200, 371));
+        jPanel_DisabledPanel.setMinimumSize(new java.awt.Dimension(100, 50));
+        jPanel_DisabledPanel.setPreferredSize(new java.awt.Dimension(200, 200));
         jPanel_DisabledPanel.setLayout(new java.awt.GridBagLayout());
 
         treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("root");
         jTree_DisabledFilesTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
         jTree_DisabledFilesTree.setToolTipText("This file-tree shows the files that are currently disabled.");
+        jTree_DisabledFilesTree.setMinimumSize(new java.awt.Dimension(50, 50));
+        jTree_DisabledFilesTree.setPreferredSize(new java.awt.Dimension(75, 75));
         jTree_DisabledFilesTree.setRootVisible(false);
         jTree_DisabledFilesTree.setModel(new TreeModel_FullPathExchange(getNodeFromFile(DISABLED_FILES_DIR)));
+        jTree_DisabledFilesTree.getModel().addTreeModelListener(new TreeModelListener() {
+
+            @Override
+            public void treeNodesChanged(TreeModelEvent e) {
+                System.out.println("Tree node changed! --- Path: " + Arrays.toString(e.getPath()));
+            }
+
+            @Override
+            public void treeNodesInserted(TreeModelEvent e) {
+                TreePath treePath = e.getTreePath();
+
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode) treePath.getLastPathComponent();
+                DefaultMutableTreeNode parent = (DefaultMutableTreeNode) node.getParent();
+                if (parent != null && parent.isRoot()) {
+                    TreePath parentPath = new TreePath(parent);
+                    jTree_DisabledFilesTree.expandPath(parentPath);
+                }
+            }
+
+            @Override
+            public void treeNodesRemoved(TreeModelEvent e) {
+                System.out.println("Tree nodes removed! --- Path: " + Arrays.toString(e.getPath()));
+            }
+
+            @Override
+            public void treeStructureChanged(TreeModelEvent e) {
+                System.out.println("Tree structure changed! --- Path: " + Arrays.toString(e.getPath()));
+            }
+        });
         jScrollPane_DisabledFilesTree.setViewportView(jTree_DisabledFilesTree);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -148,11 +216,12 @@ public class Main extends javax.swing.JFrame {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 0.1;
         gridBagConstraints.weighty = 0.1;
         jPanel_Main.add(jPanel_DisabledPanel, gridBagConstraints);
 
+        jPanel_CenterAreaPanel.setMinimumSize(new java.awt.Dimension(100, 50));
+        jPanel_CenterAreaPanel.setPreferredSize(new java.awt.Dimension(200, 200));
         jPanel_CenterAreaPanel.setLayout(new java.awt.GridBagLayout());
 
         jPanel_DirectControl.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createEtchedBorder(), javax.swing.BorderFactory.createTitledBorder("Direct Control:")));
@@ -264,7 +333,39 @@ public class Main extends javax.swing.JFrame {
         treeNode1.add(treeNode2);
         jTree_ListTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
         jTree_ListTree.setToolTipText("This file-tree shows the files that the currently selected list contains.");
+        jTree_ListTree.setMaximumSize(new java.awt.Dimension(0, 0));
+        jTree_ListTree.setMinimumSize(new java.awt.Dimension(50, 50));
+        jTree_ListTree.setPreferredSize(new java.awt.Dimension(75, 75));
         jTree_ListTree.setRootVisible(false);
+        jTree_ListTree.getModel().addTreeModelListener(new TreeModelListener() {
+
+            @Override
+            public void treeNodesChanged(TreeModelEvent e) {
+                System.out.println("Tree node changed! --- Path: " + Arrays.toString(e.getPath()));
+            }
+
+            @Override
+            public void treeNodesInserted(TreeModelEvent e) {
+                TreePath treePath = e.getTreePath();
+
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode) treePath.getLastPathComponent();
+                DefaultMutableTreeNode parent = (DefaultMutableTreeNode) node.getParent();
+                if (parent != null && parent.isRoot()) {
+                    TreePath parentPath = new TreePath(parent);
+                    jTree_ListTree.expandPath(parentPath);
+                }
+            }
+
+            @Override
+            public void treeNodesRemoved(TreeModelEvent e) {
+                System.out.println("Tree nodes removed! --- Path: " + Arrays.toString(e.getPath()));
+            }
+
+            @Override
+            public void treeStructureChanged(TreeModelEvent e) {
+                System.out.println("Tree structure changed! --- Path: " + Arrays.toString(e.getPath()));
+            }
+        });
         jScrollPane1.setViewportView(jTree_ListTree);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -363,7 +464,6 @@ public class Main extends javax.swing.JFrame {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 0.1;
         gridBagConstraints.weighty = 0.1;
         jPanel_Main.add(jPanel_CenterAreaPanel, gridBagConstraints);
@@ -399,11 +499,6 @@ public class Main extends javax.swing.JFrame {
         for (DefaultMutableTreeNode aSelectedNode : selectedNodes) {
             outModel.exchangeNodeOut(aSelectedNode, inModel);
         }
-
-        //Show last added node
-        TreePath treePath = new TreePath(outModel.getLastOutgoingNode().getPath());
-        jTree_DisabledFilesTree.expandPath(treePath);
-        jTree_GameDataTree.scrollPathToVisible(treePath);
     }//GEN-LAST:event_jButton_DirectDisableActionPerformed
 
     private void jButton_DirectEnableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_DirectEnableActionPerformed
@@ -415,11 +510,6 @@ public class Main extends javax.swing.JFrame {
         for (DefaultMutableTreeNode aSelectedNode : selectedNodes) {
             outModel.exchangeNodeOut(aSelectedNode, inModel);
         }
-
-        //Show last added node
-        TreePath treePath = new TreePath(outModel.getLastOutgoingNode().getPath());
-        jTree_DisabledFilesTree.expandPath(treePath);
-        jTree_GameDataTree.scrollPathToVisible(treePath);
     }//GEN-LAST:event_jButton_DirectEnableActionPerformed
 
     /**
