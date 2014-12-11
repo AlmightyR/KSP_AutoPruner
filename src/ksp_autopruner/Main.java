@@ -1,7 +1,12 @@
 package ksp_autopruner;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
@@ -12,19 +17,52 @@ import javax.swing.tree.TreePath;
  */
 public class Main extends javax.swing.JFrame {
 
+    //<editor-fold defaultstate="collapsed" desc="Folder Structure Variables">
     public static final File BASE_DIR = new File(System.getProperty("user.dir"));
 
     //@TODO: Make GameData directory location dynamic
-    public static File GAMEDATA_DIR = new File(BASE_DIR.getParentFile().getAbsolutePath() + "/GameData");
+    public static File gameDataDir = new File(BASE_DIR.getParentFile().getAbsolutePath() + "/GameData");
 
-    public static File DISABLED_FILES_DIR = new File(BASE_DIR.getAbsolutePath() + "/_Disabled");
-    public static File LISTS_DIR = new File(BASE_DIR.getAbsolutePath() + "/_Lists");
+    public static File disabledFilesDir = new File(BASE_DIR.getAbsolutePath() + "/_Disabled");
+    //@NODE: This will probably be the base dir on the public release. '_Lists' is being used to better organize the project during testing.
+    public static File pruneListsDir = new File(BASE_DIR.getAbsolutePath() + "/_Lists");
+//</editor-fold>
+
+    private final Map<String, File> PRUNELIST_MAP = new HashMap<>();
+
+    //<editor-fold defaultstate="collapsed" desc="Extra Methods">
+    private List<File> getPruneLists(File root) {
+        List<File> prnlFiles = new ArrayList<>();
+        for (File file : pruneListsDir.listFiles()) {
+            if (file.isDirectory()) {
+                prnlFiles.addAll(getPruneLists(file));
+            } else {
+                if (file.getName().toLowerCase().endsWith(".prnl")) {
+                    prnlFiles.add(file);
+                }
+            }
+        }
+        return prnlFiles;
+    }
+//</editor-fold>
 
     /**
      * Creates new form Main
      */
     public Main() {
         initComponents();
+
+        /*
+         -Retrieve and filter the prunelists from the file-system.
+         -Map prunelists' names to their files.
+         -Add prunelists' names to the lists' combobox.
+         */
+        List<File> pruneLists = getPruneLists(pruneListsDir);
+        for (File file : pruneLists) {
+            String fileName = file.getName();
+            PRUNELIST_MAP.put(fileName, file);
+            jComboBox_ListSelector.addItem(fileName);
+        }
     }
 
     /**
@@ -79,7 +117,6 @@ public class Main extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("KSP AutoPruner GUI");
-        setPreferredSize(new java.awt.Dimension(400, 400));
         getContentPane().setLayout(new java.awt.CardLayout());
 
         jScrollPane_MainPanel.setPreferredSize(new java.awt.Dimension(0, 0));
@@ -94,7 +131,7 @@ public class Main extends javax.swing.JFrame {
         jPanel_EnabledTreePanel.setPreferredSize(new java.awt.Dimension(0, 0));
         jPanel_EnabledTreePanel.setLayout(new java.awt.GridBagLayout());
 
-        jTree_EnabledTree.setModel(new PathAwareUndoableTreeModel(Util.getNodeFromFile(GAMEDATA_DIR)));
+        jTree_EnabledTree.setModel(new PathAwareUndoableTreeModel(Util.getNodeFromFile(gameDataDir)));
         jTree_EnabledTree.setMaximumSize(new java.awt.Dimension(0, 0));
         jTree_EnabledTree.setName(""); // NOI18N
         jTree_EnabledTree.setPreferredSize(new java.awt.Dimension(0, 0));
@@ -165,7 +202,7 @@ public class Main extends javax.swing.JFrame {
 
         jPanel_ListManagementPanel.setLayout(new java.awt.GridLayout(1, 2));
 
-        jComboBox_ListSelector.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        jComboBox_ListSelector.setModel(new DefaultComboBoxModel());
         jPanel_ListManagementPanel.add(jComboBox_ListSelector);
 
         jPanel_ListManagementControlsPanel.setLayout(new java.awt.GridLayout(0, 2));
@@ -300,7 +337,7 @@ public class Main extends javax.swing.JFrame {
         jPanel_DisabledTreePanel.setPreferredSize(new java.awt.Dimension(0, 0));
         jPanel_DisabledTreePanel.setLayout(new java.awt.GridBagLayout());
 
-        jTree_DisabledTree.setModel(new PathAwareUndoableTreeModel(Util.getNodeFromFile(DISABLED_FILES_DIR)));
+        jTree_DisabledTree.setModel(new PathAwareUndoableTreeModel(Util.getNodeFromFile(disabledFilesDir)));
         jTree_DisabledTree.setMaximumSize(new java.awt.Dimension(0, 0));
         jTree_DisabledTree.setPreferredSize(new java.awt.Dimension(0, 0));
         jTree_DisabledTree.setRootVisible(false);
@@ -370,7 +407,8 @@ public class Main extends javax.swing.JFrame {
         for (TreePath path : jTree_DisabledTree.getSelectionPaths()) {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
             DefaultMutableTreeNode newNode = (DefaultMutableTreeNode) node.clone();
-            //Insert a clone of this leaf into the catching tree.
+
+            //Insert a clone of this node into the catching tree.
             catchingModel.insertNodeInto(newNode, catchingModel.getInsertionNode(node));
             if (!node.isLeaf()) {
                 //Insert all leafs descendant fom this node into the catching tree.
@@ -400,7 +438,8 @@ public class Main extends javax.swing.JFrame {
         for (TreePath path : jTree_EnabledTree.getSelectionPaths()) {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
             DefaultMutableTreeNode newNode = (DefaultMutableTreeNode) node.clone();
-            //Insert a clone of this leaf into the catching tree.
+
+            //Insert a clone of this node into the catching tree.
             catchingModel.insertNodeInto(newNode, catchingModel.getInsertionNode(node));
             if (!node.isLeaf()) {
                 //Insert all leafs descendant fom this node into the catching tree.
