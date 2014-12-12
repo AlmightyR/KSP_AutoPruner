@@ -42,6 +42,14 @@ public class Main extends javax.swing.JFrame {
     //<editor-fold defaultstate="collapsed" desc="Extra Methods">
     private List<File> getPruneLists(File root) {
         List<File> prnlFiles = new ArrayList<>();
+        /*
+         @BUGFIX: V3.2.1
+         If the received root doesn't exist in the file-system, or is not a directory, it can't have children.
+         Return empty 'prnlFiles'.
+         */
+        if (!root.exists() || !root.isDirectory()) {
+            return prnlFiles;
+        }
         for (File file : root.listFiles()) {
             if (file.isDirectory()) {
                 prnlFiles.addAll(getPruneLists(file));
