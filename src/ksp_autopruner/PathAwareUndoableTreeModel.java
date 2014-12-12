@@ -1,6 +1,5 @@
 package ksp_autopruner;
 
-import java.util.Arrays;
 import java.util.Enumeration;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -37,7 +36,7 @@ public class PathAwareUndoableTreeModel extends DefaultTreeModel {
 
         //Create and post an UndoableEdit for the change
         UndoableEdit edit = new NodeAddEdit(parent, newChild, index);
-        System.out.println(edit);
+
         editListeners.postEdit(edit);
     }
 

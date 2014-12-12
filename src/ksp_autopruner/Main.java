@@ -1,11 +1,19 @@
 package ksp_autopruner;
 
+import java.awt.event.ItemEvent;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
@@ -28,12 +36,13 @@ public class Main extends javax.swing.JFrame {
     public static File pruneListsDir = new File(BASE_DIR.getAbsolutePath() + "/_Lists");
 //</editor-fold>
 
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private final Map<String, File> PRUNELIST_MAP = new HashMap<>();
 
     //<editor-fold defaultstate="collapsed" desc="Extra Methods">
     private List<File> getPruneLists(File root) {
         List<File> prnlFiles = new ArrayList<>();
-        for (File file : pruneListsDir.listFiles()) {
+        for (File file : root.listFiles()) {
             if (file.isDirectory()) {
                 prnlFiles.addAll(getPruneLists(file));
             } else {
@@ -44,6 +53,32 @@ public class Main extends javax.swing.JFrame {
         }
         return prnlFiles;
     }
+
+    private List<DefaultMutableTreeNode> parsePruneList(File file) throws FileNotFoundException, IOException {
+        List<DefaultMutableTreeNode> nodeList = new ArrayList<>();
+
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                nodeList.add(getTreeNodeFromFilePath(line));
+            }
+        }
+        return nodeList;
+    }
+
+    @SuppressWarnings("null")
+    private DefaultMutableTreeNode getTreeNodeFromFilePath(String path) {
+        DefaultMutableTreeNode node = null;
+        for (String split : path.split("(\\\\)|/")) {
+            DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(split);
+            if (node != null) {
+                node.add(newNode);
+            }
+            node = newNode;
+        }
+//        return (DefaultMutableTreeNode) node.getRoot();
+        return node;
+    }
 //</editor-fold>
 
     /**
@@ -51,18 +86,6 @@ public class Main extends javax.swing.JFrame {
      */
     public Main() {
         initComponents();
-
-        /*
-         -Retrieve and filter the prunelists from the file-system.
-         -Map prunelists' names to their files.
-         -Add prunelists' names to the lists' combobox.
-         */
-        List<File> pruneLists = getPruneLists(pruneListsDir);
-        for (File file : pruneLists) {
-            String fileName = file.getName();
-            PRUNELIST_MAP.put(fileName, file);
-            jComboBox_ListSelector.addItem(fileName);
-        }
     }
 
     /**
@@ -203,6 +226,21 @@ public class Main extends javax.swing.JFrame {
         jPanel_ListManagementPanel.setLayout(new java.awt.GridLayout(1, 2));
 
         jComboBox_ListSelector.setModel(new DefaultComboBoxModel());
+        /*
+        -Retrieve and filter the prunelists from the file-system.
+        -Map prunelists' names to their files.
+        -Add prunelists' names to the lists' combobox.
+        */
+        for (File file : getPruneLists(pruneListsDir)) {
+            String fileName = file.getName();
+            PRUNELIST_MAP.put(fileName, file);
+            jComboBox_ListSelector.addItem(fileName);
+        }
+        jComboBox_ListSelector.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                jComboBox_ListSelectorItemStateChanged(evt);
+            }
+        });
         jPanel_ListManagementPanel.add(jComboBox_ListSelector);
 
         jPanel_ListManagementControlsPanel.setLayout(new java.awt.GridLayout(0, 2));
@@ -457,6 +495,31 @@ public class Main extends javax.swing.JFrame {
             releassingModel.removeNodeFromParent(node);
         }
     }//GEN-LAST:event_jButton_DisableSelectedNodeActionPerformed
+
+    private void jComboBox_ListSelectorItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jComboBox_ListSelectorItemStateChanged
+        if (evt.getStateChange() == ItemEvent.SELECTED) {
+            //Clear tree of previous prunelist's nodes.
+            PathAwareUndoableTreeModel model = (PathAwareUndoableTreeModel) jTree_ListTree.getModel();
+            ((DefaultMutableTreeNode) model.getRoot()).removeAllChildren();
+            model.reload();
+
+            //Repopulate tree with new prunelist's nodes.
+            String item = (String) evt.getItem();
+            try {
+                List<DefaultMutableTreeNode> parsedNodes = parsePruneList(PRUNELIST_MAP.get(item));
+                for (DefaultMutableTreeNode node : parsedNodes) {
+                    new DefaultMutableTreeNode("Generic Parent").add((MutableTreeNode) node.getRoot());
+
+                    model.insertNode(node);
+                    System.out.println("TEST: " + Arrays.toString(node.getPath()));
+                    jTree_ListTree.addSelectionPath(new TreePath(node.getPath()));
+                }
+            } catch (IOException ex) {
+                //@TODO: Display warning popup stating the file couldn't be read.
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }//GEN-LAST:event_jComboBox_ListSelectorItemStateChanged
 
     /**
      * @param args the command line arguments
