@@ -247,9 +247,49 @@ public class PathAwareUndoableTreeModel extends DefaultTreeModel {
      * @param parent The parent node to which <code>newChild</code> will be
      * inserted into.
      */
-    public void insertNodeInto(MutableTreeNode newChild, MutableTreeNode parent) {
+    public void insertNodeInto(DefaultMutableTreeNode newChild, DefaultMutableTreeNode parent) {
+        Enumeration children = parent.children();
+        while (children.hasMoreElements()) {
+            DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
+            if (newChild.toString().equals(child.toString())) {
+                //Parent already has this child.
+                return;
+            }
+        }
         int childCount = parent.getChildCount();
         insertNodeInto(newChild, parent, childCount);
+    }
+
+    @SuppressWarnings("null")
+    public DefaultMutableTreeNode deepClone(DefaultMutableTreeNode aNode, boolean includeParents) {
+        DefaultMutableTreeNode clone = (DefaultMutableTreeNode) aNode.clone();
+
+        if (includeParents) {
+            DefaultMutableTreeNode parent = (DefaultMutableTreeNode) aNode.getParent();
+            DefaultMutableTreeNode parentClone = (DefaultMutableTreeNode) parent.clone();
+            parentClone.add(clone);
+            while (true) {
+                parent = (DefaultMutableTreeNode) parent.getParent();
+                if (parent == null) {
+                    break;
+                }
+                DefaultMutableTreeNode newClone = (DefaultMutableTreeNode) parent.clone();
+                newClone.add(parentClone);
+                parentClone = newClone;
+            }
+        }
+
+        Enumeration children = aNode.children();
+        while (children.hasMoreElements()) {
+            DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
+            child = deepClone(child);
+            clone.add(child);
+        }
+        return clone;
+    }
+
+    public DefaultMutableTreeNode deepClone(DefaultMutableTreeNode aNode) {
+        return deepClone(aNode, false);
     }
 
     /**
@@ -281,6 +321,16 @@ public class PathAwareUndoableTreeModel extends DefaultTreeModel {
             }
         }
         return currentNode;
+    }
+
+    protected boolean hasEquivalentNode(DefaultMutableTreeNode aNode) {
+        DefaultMutableTreeNode reusableNode = getReusableNode(aNode);
+        if (reusableNode.getLevel() == aNode.getLevel()) {
+            if (reusableNode.toString().equals(aNode.toString())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

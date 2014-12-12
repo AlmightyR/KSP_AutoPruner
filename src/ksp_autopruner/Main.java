@@ -7,7 +7,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -15,12 +14,12 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
 
 /**
- *
  * @author Rodrigo Legendre Lima Rodrigues
  */
 public class Main extends javax.swing.JFrame {
@@ -30,6 +29,7 @@ public class Main extends javax.swing.JFrame {
 
     //@TODO: Make GameData directory location dynamic
     public static File gameDataDir = new File(BASE_DIR.getParentFile().getAbsolutePath() + "/GameData");
+//    public static File gameDataDir = new File(BASE_DIR.getAbsolutePath() + "/GameData");
 
     public static File disabledFilesDir = new File(BASE_DIR.getAbsolutePath() + "/_Disabled");
     //@NODE: This will probably be the base dir on the public release. '_Lists' is being used to better organize the project during testing.
@@ -42,11 +42,6 @@ public class Main extends javax.swing.JFrame {
     //<editor-fold defaultstate="collapsed" desc="Extra Methods">
     private List<File> getPruneLists(File root) {
         List<File> prnlFiles = new ArrayList<>();
-        /*
-         @BUGFIX: V3.2.1
-         If the received root doesn't exist in the file-system, or is not a directory, it can't have children.
-         Return empty 'prnlFiles'.
-         */
         if (!root.exists() || !root.isDirectory()) {
             return prnlFiles;
         }
@@ -84,8 +79,44 @@ public class Main extends javax.swing.JFrame {
             }
             node = newNode;
         }
-//        return (DefaultMutableTreeNode) node.getRoot();
         return node;
+    }
+
+    private void transferSelectedTreeNodes(JTree releassingTree, JTree catchingTree, boolean isTrueTransfer) {
+        //If nothing selected, do nothing.
+        if (releassingTree.getSelectionCount() == 0) {
+            return;
+        }
+
+        PathAwareUndoableTreeModel catchingModel = (PathAwareUndoableTreeModel) catchingTree.getModel();
+        PathAwareUndoableTreeModel releassingModel = (PathAwareUndoableTreeModel) releassingTree.getModel();
+        for (TreePath path : releassingTree.getSelectionPaths()) {
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
+            DefaultMutableTreeNode newNode = (DefaultMutableTreeNode) node.clone();
+
+            //Insert a clone of this node into the catching tree.
+            catchingModel.insertNodeInto(newNode, catchingModel.getInsertionNode(node));
+            if (!node.isLeaf()) {
+                //Insert all leafs descendant fom this node into the catching tree.
+                Enumeration depthFirstEnumeration = node.depthFirstEnumeration();
+                while (depthFirstEnumeration.hasMoreElements()) {
+                    DefaultMutableTreeNode e = (DefaultMutableTreeNode) depthFirstEnumeration.nextElement();
+                    if (e.isLeaf()) {
+                        catchingModel.insertNodeInto((DefaultMutableTreeNode) e.clone(), catchingModel.getInsertionNode(e));
+                    }
+                }
+            }
+            //Add newNode to the selection in the catching tree.
+            catchingTree.addSelectionPath(new TreePath(newNode.getPath()));
+            if (isTrueTransfer) {
+                //Remove node from the original tree.
+                releassingModel.removeNodeFromParent(node);
+            }
+        }
+    }
+
+    private void transferSelectedTreeNodes(JTree releassingTree, JTree catchingTree) {
+        transferSelectedTreeNodes(releassingTree, catchingTree, true);
     }
 //</editor-fold>
 
@@ -94,6 +125,27 @@ public class Main extends javax.swing.JFrame {
      */
     public Main() {
         initComponents();
+
+        //<editor-fold defaultstate="collapsed" desc="Prepare other trees' models to be used by any 'postInit' code below.">
+        PathAwareUndoableTreeModel disabledModel = (PathAwareUndoableTreeModel) jTree_DisabledTree.getModel();
+        PathAwareUndoableTreeModel enabledModel = (PathAwareUndoableTreeModel) jTree_EnabledTree.getModel();
+//</editor-fold>
+
+        //<editor-fold defaultstate="collapsed" desc="Transfer already-pruned files to the disabled list.">
+        Enumeration enumeration = ((DefaultMutableTreeNode) enabledModel.getRoot()).depthFirstEnumeration();
+        while (enumeration.hasMoreElements()) {
+            DefaultMutableTreeNode e = (DefaultMutableTreeNode) enumeration.nextElement();
+            if (e.isLeaf()) {
+                String userObject = (String) e.getUserObject();
+                if (userObject.toLowerCase().endsWith(".pruned")) {
+                    jTree_EnabledTree.addSelectionPath(new TreePath(e.getPath()));
+                }
+            }
+        }
+        transferSelectedTreeNodes(jTree_EnabledTree, jTree_DisabledTree);
+        enabledModel.reload();
+        disabledModel.reload();
+//</editor-fold>
     }
 
     /**
@@ -307,6 +359,11 @@ public class Main extends javax.swing.JFrame {
         jButton_EnableSelectedListedNodes.setText("<<<");
         jButton_EnableSelectedListedNodes.setToolTipText("Enable selected PruneList file.");
         jButton_EnableSelectedListedNodes.setMargin(new java.awt.Insets(2, 2, 2, 2));
+        jButton_EnableSelectedListedNodes.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton_EnableSelectedListedNodesActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.6;
@@ -315,6 +372,11 @@ public class Main extends javax.swing.JFrame {
         jButton_AddSelectedEnabledNodesToList.setText(">");
         jButton_AddSelectedEnabledNodesToList.setToolTipText("Add selected file from the enabled files to the PruneList.");
         jButton_AddSelectedEnabledNodesToList.setMargin(new java.awt.Insets(2, 2, 2, 2));
+        jButton_AddSelectedEnabledNodesToList.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton_AddSelectedEnabledNodesToListActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 0.4;
@@ -323,6 +385,11 @@ public class Main extends javax.swing.JFrame {
         jButton_AddSelectedDisabledNodesToList.setText("<");
         jButton_AddSelectedDisabledNodesToList.setToolTipText("Add selected file from the disabled files to the PruneList.");
         jButton_AddSelectedDisabledNodesToList.setMargin(new java.awt.Insets(2, 2, 2, 2));
+        jButton_AddSelectedDisabledNodesToList.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton_AddSelectedDisabledNodesToListActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 0.4;
@@ -331,6 +398,11 @@ public class Main extends javax.swing.JFrame {
         jButton_DisableSelectedListedNodes.setText(">>>");
         jButton_DisableSelectedListedNodes.setToolTipText("Disable selected PruneList file.");
         jButton_DisableSelectedListedNodes.setMargin(new java.awt.Insets(2, 2, 2, 2));
+        jButton_DisableSelectedListedNodes.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton_DisableSelectedListedNodesActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.6;
@@ -394,7 +466,7 @@ public class Main extends javax.swing.JFrame {
 
         jScrollPane_DisabledTree.setPreferredSize(new java.awt.Dimension(128, 128));
 
-        jTree_DisabledTree.setModel(new PathAwareUndoableTreeModel(Util.getNodeFromFile(disabledFilesDir)));
+        jTree_DisabledTree.setModel(new PathAwareUndoableTreeModel(Util.getNodeFromFile(disabledFilesDir,false)));
         jTree_DisabledTree.setToolTipText("A tree of nodes representing the files that are or will be disabled.");
         jTree_DisabledTree.setRootVisible(false);
         jScrollPane_DisabledTree.setViewportView(jTree_DisabledTree);
@@ -455,69 +527,19 @@ public class Main extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton_EnableSelectedNodeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_EnableSelectedNodeActionPerformed
-        //If nothing selected, do nothing.
-        if (jTree_DisabledTree.getSelectionCount() == 0) {
-            return;
-        }
-
-        PathAwareUndoableTreeModel catchingModel = (PathAwareUndoableTreeModel) jTree_EnabledTree.getModel();
-        PathAwareUndoableTreeModel releassingModel = (PathAwareUndoableTreeModel) jTree_DisabledTree.getModel();
-        for (TreePath path : jTree_DisabledTree.getSelectionPaths()) {
-            DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
-            DefaultMutableTreeNode newNode = (DefaultMutableTreeNode) node.clone();
-
-            //Insert a clone of this node into the catching tree.
-            catchingModel.insertNodeInto(newNode, catchingModel.getInsertionNode(node));
-            if (!node.isLeaf()) {
-                //Insert all leafs descendant fom this node into the catching tree.
-                Enumeration depthFirstEnumeration = node.depthFirstEnumeration();
-                while (depthFirstEnumeration.hasMoreElements()) {
-                    DefaultMutableTreeNode e = (DefaultMutableTreeNode) depthFirstEnumeration.nextElement();
-                    if (e.isLeaf()) {
-                        catchingModel.insertNodeInto((MutableTreeNode) e.clone(), catchingModel.getInsertionNode(e));
-                    }
-                }
-            }
-            //Add newNode to the selection in the catching tree.
-            jTree_EnabledTree.addSelectionPath(new TreePath(newNode.getPath()));
-            //Remove node from the original tree.
-            releassingModel.removeNodeFromParent(node);
-        }
+        transferSelectedTreeNodes(jTree_DisabledTree, jTree_EnabledTree);
     }//GEN-LAST:event_jButton_EnableSelectedNodeActionPerformed
 
     private void jButton_DisableSelectedNodeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_DisableSelectedNodeActionPerformed
-        //If nothing selected, do nothing.
-        if (jTree_EnabledTree.getSelectionCount() == 0) {
-            return;
-        }
-
-        PathAwareUndoableTreeModel catchingModel = (PathAwareUndoableTreeModel) jTree_DisabledTree.getModel();
-        PathAwareUndoableTreeModel releassingModel = (PathAwareUndoableTreeModel) jTree_EnabledTree.getModel();
-        for (TreePath path : jTree_EnabledTree.getSelectionPaths()) {
-            DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
-            DefaultMutableTreeNode newNode = (DefaultMutableTreeNode) node.clone();
-
-            //Insert a clone of this node into the catching tree.
-            catchingModel.insertNodeInto(newNode, catchingModel.getInsertionNode(node));
-            if (!node.isLeaf()) {
-                //Insert all leafs descendant fom this node into the catching tree.
-                Enumeration depthFirstEnumeration = node.depthFirstEnumeration();
-                while (depthFirstEnumeration.hasMoreElements()) {
-                    DefaultMutableTreeNode e = (DefaultMutableTreeNode) depthFirstEnumeration.nextElement();
-                    if (e.isLeaf()) {
-                        catchingModel.insertNodeInto((MutableTreeNode) e.clone(), catchingModel.getInsertionNode(e));
-                    }
-                }
-            }
-            //Add newNode to the selection in the catching tree.
-            jTree_DisabledTree.addSelectionPath(new TreePath(newNode.getPath()));
-            //Remove node from the original tree.
-            releassingModel.removeNodeFromParent(node);
-        }
+        transferSelectedTreeNodes(jTree_EnabledTree, jTree_DisabledTree);
     }//GEN-LAST:event_jButton_DisableSelectedNodeActionPerformed
 
     private void jComboBox_ListSelectorItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jComboBox_ListSelectorItemStateChanged
         if (evt.getStateChange() == ItemEvent.SELECTED) {
+            //Prepare other trees' models to be used.
+            PathAwareUndoableTreeModel disabledModel = (PathAwareUndoableTreeModel) jTree_DisabledTree.getModel();
+            PathAwareUndoableTreeModel enabledModel = (PathAwareUndoableTreeModel) jTree_EnabledTree.getModel();
+
             //Clear tree of previous prunelist's nodes.
             PathAwareUndoableTreeModel model = (PathAwareUndoableTreeModel) jTree_ListTree.getModel();
             ((DefaultMutableTreeNode) model.getRoot()).removeAllChildren();
@@ -528,18 +550,66 @@ public class Main extends javax.swing.JFrame {
             try {
                 List<DefaultMutableTreeNode> parsedNodes = parsePruneList(PRUNELIST_MAP.get(item));
                 for (DefaultMutableTreeNode node : parsedNodes) {
-                    new DefaultMutableTreeNode("Generic Parent").add((MutableTreeNode) node.getRoot());
+                    //Add a generic root to the parsed node, since it doesn't have any, and other systems need it.
+                    new DefaultMutableTreeNode("Generic Root").add((MutableTreeNode) node.getRoot());
 
-                    model.insertNode(node);
-                    System.out.println("TEST: " + Arrays.toString(node.getPath()));
-                    jTree_ListTree.addSelectionPath(new TreePath(node.getPath()));
+                    //Check if node exists either on Disabled or Enabled. If it doesn't, ignore the PruneList's node.
+                    if (disabledModel.hasEquivalentNode(node)) {
+                        DefaultMutableTreeNode deepClone = disabledModel.deepClone(disabledModel.getReusableNode(node), true);
+                        model.insertNode(deepClone);
+                    } else if (enabledModel.hasEquivalentNode(node)) {
+                        DefaultMutableTreeNode deepClone = enabledModel.deepClone(enabledModel.getReusableNode(node), true);
+                        model.insertNode(deepClone);
+                    } else {
+                        /*
+                         @TODO: Accumulate failed nodes into a list,
+                         then warn the user that those weren't found and are missing from the PruneList because they are ignored.
+                         */
+                    }
                 }
+                jTree_ListTree.expandPath(new TreePath(jTree_ListTree.getModel().getRoot()));
             } catch (IOException ex) {
                 //@TODO: Display warning popup stating the file couldn't be read.
                 Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }//GEN-LAST:event_jComboBox_ListSelectorItemStateChanged
+
+    private void jButton_EnableSelectedListedNodesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_EnableSelectedListedNodesActionPerformed
+        transferSelectedTreeNodes(jTree_ListTree, jTree_EnabledTree, false);
+        //Prepare a direct reference to the Disabled tree's model, as it will be used often below.
+        PathAwareUndoableTreeModel disabledModel = (PathAwareUndoableTreeModel) jTree_DisabledTree.getModel();
+        //Remove selected nodes from Disabled tree, if they exist there.
+        TreePath[] selectionPaths = jTree_ListTree.getSelectionPaths();
+        for (TreePath path : selectionPaths) {
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
+            if (disabledModel.hasEquivalentNode(node)) {
+                disabledModel.removeNodeFromParent(disabledModel.getReusableNode(node));
+            }
+        }
+    }//GEN-LAST:event_jButton_EnableSelectedListedNodesActionPerformed
+
+    private void jButton_DisableSelectedListedNodesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_DisableSelectedListedNodesActionPerformed
+        transferSelectedTreeNodes(jTree_ListTree, jTree_DisabledTree, false);
+        //Prepare a direct reference to the Enabled tree's model, as it will be used often below.
+        PathAwareUndoableTreeModel enabledModel = (PathAwareUndoableTreeModel) jTree_EnabledTree.getModel();
+        //Remove selected nodes from Enabled tree, if they exist there.
+        TreePath[] selectionPaths = jTree_ListTree.getSelectionPaths();
+        for (TreePath path : selectionPaths) {
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
+            if (enabledModel.hasEquivalentNode(node)) {
+                enabledModel.removeNodeFromParent(enabledModel.getReusableNode(node));
+            }
+        }
+    }//GEN-LAST:event_jButton_DisableSelectedListedNodesActionPerformed
+
+    private void jButton_AddSelectedEnabledNodesToListActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_AddSelectedEnabledNodesToListActionPerformed
+        transferSelectedTreeNodes(jTree_EnabledTree, jTree_ListTree, false);
+    }//GEN-LAST:event_jButton_AddSelectedEnabledNodesToListActionPerformed
+
+    private void jButton_AddSelectedDisabledNodesToListActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_AddSelectedDisabledNodesToListActionPerformed
+        transferSelectedTreeNodes(jTree_DisabledTree, jTree_ListTree, false);
+    }//GEN-LAST:event_jButton_AddSelectedDisabledNodesToListActionPerformed
 
     /**
      * @param args the command line arguments
