@@ -148,24 +148,21 @@ public class Main extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("KSP AutoPruner GUI");
+        setMinimumSize(new java.awt.Dimension(564, 570));
         getContentPane().setLayout(new java.awt.CardLayout());
 
-        jScrollPane_MainPanel.setPreferredSize(new java.awt.Dimension(0, 0));
-
-        jPanel_MainPanel.setMinimumSize(new java.awt.Dimension(0, 0));
-        jPanel_MainPanel.setPreferredSize(new java.awt.Dimension(0, 0));
         jPanel_MainPanel.setLayout(new java.awt.GridBagLayout());
 
         jPanel_LeftPanel.setLayout(new java.awt.GridBagLayout());
 
         jPanel_EnabledTreePanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED), javax.swing.BorderFactory.createTitledBorder("Enabled Files:")));
-        jPanel_EnabledTreePanel.setPreferredSize(new java.awt.Dimension(0, 0));
         jPanel_EnabledTreePanel.setLayout(new java.awt.GridBagLayout());
 
+        jScrollPane_EnabledTree.setPreferredSize(new java.awt.Dimension(128, 128));
+
         jTree_EnabledTree.setModel(new PathAwareUndoableTreeModel(Util.getNodeFromFile(gameDataDir)));
-        jTree_EnabledTree.setMaximumSize(new java.awt.Dimension(0, 0));
+        jTree_EnabledTree.setToolTipText("A tree of nodes representing the files that are or will be enabled.");
         jTree_EnabledTree.setName(""); // NOI18N
-        jTree_EnabledTree.setPreferredSize(new java.awt.Dimension(0, 0));
         jTree_EnabledTree.setRootVisible(false);
         jScrollPane_EnabledTree.setViewportView(jTree_EnabledTree);
 
@@ -188,13 +185,14 @@ public class Main extends javax.swing.JFrame {
         gridBagConstraints.weighty = 0.1;
         jPanel_MainPanel.add(jPanel_LeftPanel, gridBagConstraints);
 
-        jPanel_CenterPanel.setPreferredSize(new java.awt.Dimension(96, 95));
+        jPanel_CenterPanel.setMinimumSize(new java.awt.Dimension(128, 225));
         jPanel_CenterPanel.setLayout(new java.awt.GridBagLayout());
 
         jPanel_DirectControlsPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED), javax.swing.BorderFactory.createTitledBorder("Direct Controls:")));
         jPanel_DirectControlsPanel.setLayout(new java.awt.GridBagLayout());
 
         jButton_DisableSelectedNode.setText(">>>>>");
+        jButton_DisableSelectedNode.setToolTipText("Disable selected files.");
         jButton_DisableSelectedNode.setMargin(new java.awt.Insets(2, 2, 2, 2));
         jButton_DisableSelectedNode.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -208,6 +206,7 @@ public class Main extends javax.swing.JFrame {
         jPanel_DirectControlsPanel.add(jButton_DisableSelectedNode, gridBagConstraints);
 
         jButton_EnableSelectedNode.setText("<<<<<");
+        jButton_EnableSelectedNode.setToolTipText("Enable selected files.");
         jButton_EnableSelectedNode.setMargin(new java.awt.Insets(2, 2, 2, 2));
         jButton_EnableSelectedNode.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -228,12 +227,15 @@ public class Main extends javax.swing.JFrame {
         jPanel_CenterPanel.add(jPanel_DirectControlsPanel, gridBagConstraints);
 
         jPanel_ListPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED), javax.swing.BorderFactory.createTitledBorder("List Controls:")));
-        jPanel_ListPanel.setPreferredSize(new java.awt.Dimension(0, 0));
+        jPanel_ListPanel.setMinimumSize(new java.awt.Dimension(128, 150));
         jPanel_ListPanel.setLayout(new java.awt.GridBagLayout());
 
+        jPanel_ListManagementPanel.setMinimumSize(new java.awt.Dimension(128, 23));
+        jPanel_ListManagementPanel.setPreferredSize(new java.awt.Dimension(128, 23));
         jPanel_ListManagementPanel.setLayout(new java.awt.GridLayout(1, 2));
 
         jComboBox_ListSelector.setModel(new DefaultComboBoxModel());
+        jComboBox_ListSelector.setToolTipText("Select an AutoPrune list.");
         /*
         -Retrieve and filter the prunelists from the file-system.
         -Map prunelists' names to their files.
@@ -254,10 +256,12 @@ public class Main extends javax.swing.JFrame {
         jPanel_ListManagementControlsPanel.setLayout(new java.awt.GridLayout(0, 2));
 
         jButton_SaveList.setText("Save");
+        jButton_SaveList.setToolTipText("Save the current nodes as an AutoPrune list.");
         jButton_SaveList.setMargin(new java.awt.Insets(2, 2, 2, 2));
         jPanel_ListManagementControlsPanel.add(jButton_SaveList);
 
         jButton_DeleteList.setText("Delete");
+        jButton_DeleteList.setToolTipText("Delete the currently selected AutoPrune list.");
         jButton_DeleteList.setMargin(new java.awt.Insets(2, 2, 2, 2));
         jPanel_ListManagementControlsPanel.add(jButton_DeleteList);
 
@@ -271,12 +275,12 @@ public class Main extends javax.swing.JFrame {
         jPanel_ListPanel.add(jPanel_ListManagementPanel, gridBagConstraints);
 
         jPanel_ListTreePanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED), javax.swing.BorderFactory.createTitledBorder("List Files:")));
-        jPanel_ListTreePanel.setPreferredSize(new java.awt.Dimension(0, 0));
         jPanel_ListTreePanel.setLayout(new java.awt.GridBagLayout());
 
+        jScrollPane_ListTree.setPreferredSize(new java.awt.Dimension(128, 128));
+
         jTree_ListTree.setModel(new PathAwareUndoableTreeModel(new DefaultMutableTreeNode("ListRoot")));
-        jTree_ListTree.setMaximumSize(new java.awt.Dimension(0, 0));
-        jTree_ListTree.setPreferredSize(new java.awt.Dimension(0, 0));
+        jTree_ListTree.setToolTipText("A tree of nodes representing the files in the selected PruneList.");
         jTree_ListTree.setRootVisible(false);
         jScrollPane_ListTree.setViewportView(jTree_ListTree);
 
@@ -301,6 +305,7 @@ public class Main extends javax.swing.JFrame {
         jPanel_ListSpecificNodeControlsPanel.setLayout(new java.awt.GridBagLayout());
 
         jButton_EnableSelectedListedNodes.setText("<<<");
+        jButton_EnableSelectedListedNodes.setToolTipText("Enable selected PruneList file.");
         jButton_EnableSelectedListedNodes.setMargin(new java.awt.Insets(2, 2, 2, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -308,6 +313,7 @@ public class Main extends javax.swing.JFrame {
         jPanel_ListSpecificNodeControlsPanel.add(jButton_EnableSelectedListedNodes, gridBagConstraints);
 
         jButton_AddSelectedEnabledNodesToList.setText(">");
+        jButton_AddSelectedEnabledNodesToList.setToolTipText("Add selected file from the enabled files to the PruneList.");
         jButton_AddSelectedEnabledNodesToList.setMargin(new java.awt.Insets(2, 2, 2, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -315,6 +321,7 @@ public class Main extends javax.swing.JFrame {
         jPanel_ListSpecificNodeControlsPanel.add(jButton_AddSelectedEnabledNodesToList, gridBagConstraints);
 
         jButton_AddSelectedDisabledNodesToList.setText("<");
+        jButton_AddSelectedDisabledNodesToList.setToolTipText("Add selected file from the disabled files to the PruneList.");
         jButton_AddSelectedDisabledNodesToList.setMargin(new java.awt.Insets(2, 2, 2, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -322,6 +329,7 @@ public class Main extends javax.swing.JFrame {
         jPanel_ListSpecificNodeControlsPanel.add(jButton_AddSelectedDisabledNodesToList, gridBagConstraints);
 
         jButton_DisableSelectedListedNodes.setText(">>>");
+        jButton_DisableSelectedListedNodes.setToolTipText("Disable selected PruneList file.");
         jButton_DisableSelectedListedNodes.setMargin(new java.awt.Insets(2, 2, 2, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -336,10 +344,12 @@ public class Main extends javax.swing.JFrame {
         jPanel_ListGeneralNodeControlspanel.setLayout(new java.awt.GridLayout(1, 2));
 
         jButton_EnableAllListedNodes.setText("Enable All");
+        jButton_EnableAllListedNodes.setToolTipText("Enable all current PruneList files.");
         jButton_EnableAllListedNodes.setMargin(new java.awt.Insets(2, 2, 2, 2));
         jPanel_ListGeneralNodeControlspanel.add(jButton_EnableAllListedNodes);
 
         jButton_DisableAllListedNodes.setText("Disable All");
+        jButton_DisableAllListedNodes.setToolTipText("Disable all current PruneList files.");
         jButton_DisableAllListedNodes.setMargin(new java.awt.Insets(2, 2, 2, 2));
         jPanel_ListGeneralNodeControlspanel.add(jButton_DisableAllListedNodes);
 
@@ -380,12 +390,12 @@ public class Main extends javax.swing.JFrame {
         jPanel_RightPanel.setLayout(new java.awt.GridBagLayout());
 
         jPanel_DisabledTreePanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED), javax.swing.BorderFactory.createTitledBorder("Disabled Files:")));
-        jPanel_DisabledTreePanel.setPreferredSize(new java.awt.Dimension(0, 0));
         jPanel_DisabledTreePanel.setLayout(new java.awt.GridBagLayout());
 
+        jScrollPane_DisabledTree.setPreferredSize(new java.awt.Dimension(128, 128));
+
         jTree_DisabledTree.setModel(new PathAwareUndoableTreeModel(Util.getNodeFromFile(disabledFilesDir)));
-        jTree_DisabledTree.setMaximumSize(new java.awt.Dimension(0, 0));
-        jTree_DisabledTree.setPreferredSize(new java.awt.Dimension(0, 0));
+        jTree_DisabledTree.setToolTipText("A tree of nodes representing the files that are or will be disabled.");
         jTree_DisabledTree.setRootVisible(false);
         jScrollPane_DisabledTree.setViewportView(jTree_DisabledTree);
 
@@ -412,10 +422,12 @@ public class Main extends javax.swing.JFrame {
         jPanel_ConsolidationControls.setLayout(new java.awt.GridLayout(1, 2));
 
         jButton_Apply.setText("Apply");
+        jButton_Apply.setToolTipText("Apply the changes.");
         jButton_Apply.setMargin(new java.awt.Insets(2, 2, 2, 2));
         jPanel_ConsolidationControls.add(jButton_Apply);
 
         jButton_Cancel.setText("Cancel");
+        jButton_Cancel.setToolTipText("Cancel the changes.");
         jButton_Cancel.setMargin(new java.awt.Insets(2, 2, 2, 2));
         jPanel_ConsolidationControls.add(jButton_Cancel);
 
