@@ -3,14 +3,19 @@ package ksp_autopruner;
 import java.awt.event.ItemEvent;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
@@ -27,6 +32,8 @@ public class Main extends javax.swing.JFrame {
     //<editor-fold defaultstate="collapsed" desc="Folder Structure Variables">
     public static final File BASE_DIR = new File(System.getProperty("user.dir"));
 
+    public static final File PROPERTIES_FILE = new File(BASE_DIR, "AutoPrunerSettings.cfg");
+
     //@TODO: Make GameData directory location dynamic
     public static File gameDataDir = new File(BASE_DIR.getParentFile().getAbsolutePath() + "/GameData");
 //    public static File gameDataDir = new File(BASE_DIR.getAbsolutePath() + "/GameData");
@@ -35,6 +42,8 @@ public class Main extends javax.swing.JFrame {
     //@NODE: This will probably be the base dir on the public release. '_Lists' is being used to better organize the project during testing.
     public static File pruneListsDir = new File(BASE_DIR.getAbsolutePath() + "/_Lists");
 //</editor-fold>
+
+    Properties prop = new Properties();
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private final Map<String, File> PRUNELIST_MAP = new HashMap<>();
@@ -120,10 +129,59 @@ public class Main extends javax.swing.JFrame {
     }
 //</editor-fold>
 
+    private void propertiesSetup() {
+        if (PROPERTIES_FILE.exists()) {
+            InputStream input = null;
+            try {
+                input = new FileInputStream(PROPERTIES_FILE);
+                prop.load(input);
+                gameDataDir = new File(prop.getProperty("GameDataDir"));
+                pruneListsDir = new File(prop.getProperty("PruneListsDir"));
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            } finally {
+                if (input != null) {
+                    try {
+                        input.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        } else {
+            @SuppressWarnings("UnusedAssignment")
+            OutputStream output = null;
+            try {
+                //Set properties' values to defaults.
+                prop.setProperty("GameDataDir", gameDataDir.getAbsolutePath());
+                prop.setProperty("PruneListsDir", pruneListsDir.getAbsolutePath());
+
+                //Save properties file.
+                output = new FileOutputStream(PROPERTIES_FILE);
+                prop.store(output, null);
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            } finally {
+                if (output != null) {
+                    try {
+                        output.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * Creates new form Main
      */
     public Main() {
+        propertiesSetup();
         initComponents();
 
         //<editor-fold defaultstate="collapsed" desc="Prepare other trees' models to be used by any 'postInit' code below.">
@@ -196,6 +254,7 @@ public class Main extends javax.swing.JFrame {
         jButton_Cancel = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
+        jMenuItem1 = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -516,6 +575,11 @@ public class Main extends javax.swing.JFrame {
         getContentPane().add(jScrollPane_MainPanel, "card2");
 
         jMenu1.setText("File");
+
+        jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.ALT_MASK));
+        jMenuItem1.setText("Exit");
+        jMenu1.add(jMenuItem1);
+
         jMenuBar1.add(jMenu1);
 
         jMenu2.setText("Edit");
@@ -659,6 +723,7 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPanel jPanel_CenterPanel;
     private javax.swing.JPanel jPanel_ConsolidationControls;
     private javax.swing.JPanel jPanel_DirectControlsPanel;

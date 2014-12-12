@@ -22,7 +22,7 @@ public class Util {
         if (file == null) {
             throw new IllegalArgumentException("Received null file.");
         }
-        
+
         DefaultMutableTreeNode node = new DefaultMutableTreeNode(file.getName());
         if (file.isDirectory() && includeChildren) {
             for (File childFile : file.listFiles()) {
